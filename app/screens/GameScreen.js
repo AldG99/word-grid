@@ -1,11 +1,19 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, SafeAreaView, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  StyleSheet,
+  SafeAreaView,
+  Alert,
+  Text,
+  Modal,
+  TouchableOpacity,
+} from 'react-native';
 import Board from '../components/Board';
 import Keyboard from '../components/Keyboard';
 import Clues from '../components/Clues';
 
 const GameScreen = () => {
-  const [puzzle, setPuzzle] = useState({
+  const initialPuzzleState = {
     grid: [
       [
         { value: '', number: 1, solution: 'C' },
@@ -20,42 +28,48 @@ const GameScreen = () => {
         null,
       ],
       [
-        { value: '', solution: 'S' },
+        { value: '', number: 4, solution: 'S' },
         { value: '', solution: 'O' },
-        null,
         { value: '', solution: 'L' },
-      ],
-      [
         null,
-        { value: '', solution: 'A' },
-        { value: '', solution: 'R' },
-        { value: '', solution: 'A' },
       ],
+      [{ value: '', solution: 'A' }, null, null, null],
     ],
     clues: {
       across: [
         { number: 1, clue: 'Lugar donde vives (4 letras)' },
         { number: 3, clue: 'Animal que camina sobre sus huesos (3 letras)' },
+        { number: 4, clue: 'Astro que nos da luz (3 letras)' },
       ],
       down: [
         { number: 1, clue: 'Objeto o elemento que existe (4 letras)' },
         { number: 2, clue: 'Parte dura del esqueleto (4 letras)' },
       ],
     },
-  });
+  };
 
+  const [puzzle, setPuzzle] = useState(initialPuzzleState);
   const [selectedCell, setSelectedCell] = useState({ row: 0, col: 0 });
   const [direction, setDirection] = useState('across');
   const [selectedClue, setSelectedClue] = useState({
     number: 1,
     direction: 'across',
   });
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
+
+  const resetGame = () => {
+    setPuzzle(initialPuzzleState);
+    setSelectedCell({ row: 0, col: 0 });
+    setDirection('across');
+    setSelectedClue({ number: 1, direction: 'across' });
+    setShowCompletionModal(false);
+  };
 
   const handleCluePress = (number, dir) => {
     setDirection(dir);
     setSelectedClue({ number, direction: dir });
 
-    // Encontrar la primera celda de la pista seleccionada
+    // Find first cell of selected clue
     for (let row = 0; row < puzzle.grid.length; row++) {
       for (let col = 0; col < puzzle.grid[row].length; col++) {
         const cell = puzzle.grid[row][col];
@@ -70,11 +84,9 @@ const GameScreen = () => {
   const handleCellPress = (rowIndex, colIndex) => {
     if (puzzle.grid[rowIndex][colIndex]) {
       if (rowIndex === selectedCell.row && colIndex === selectedCell.col) {
-        // Si presiona la misma celda, cambia la dirección
         const newDirection = direction === 'across' ? 'down' : 'across';
         setDirection(newDirection);
 
-        // Actualizar la pista seleccionada
         const cell = puzzle.grid[rowIndex][colIndex];
         if (cell.number) {
           setSelectedClue({ number: cell.number, direction: newDirection });
@@ -82,42 +94,9 @@ const GameScreen = () => {
       } else {
         setSelectedCell({ row: rowIndex, col: colIndex });
 
-        // Actualizar la pista seleccionada cuando se selecciona una nueva celda
         const cell = puzzle.grid[rowIndex][colIndex];
         if (cell.number) {
           setSelectedClue({ number: cell.number, direction });
-        }
-
-        // Encontrar la pista más cercana si la celda no tiene número
-        if (!cell.number) {
-          let foundClue = false;
-          if (direction === 'across') {
-            // Buscar el número más cercano a la izquierda
-            for (let col = colIndex; col >= 0; col--) {
-              const searchCell = puzzle.grid[rowIndex][col];
-              if (searchCell && searchCell.number) {
-                setSelectedClue({
-                  number: searchCell.number,
-                  direction: 'across',
-                });
-                foundClue = true;
-                break;
-              }
-            }
-          } else {
-            // Buscar el número más cercano arriba
-            for (let row = rowIndex; row >= 0; row--) {
-              const searchCell = puzzle.grid[row][colIndex];
-              if (searchCell && searchCell.number) {
-                setSelectedClue({
-                  number: searchCell.number,
-                  direction: 'down',
-                });
-                foundClue = true;
-                break;
-              }
-            }
-          }
         }
       }
     }
@@ -126,7 +105,6 @@ const GameScreen = () => {
   const moveToNextCell = () => {
     const { row, col } = selectedCell;
     if (direction === 'across') {
-      // Mover a la siguiente celda horizontal
       let nextCol = col + 1;
       while (nextCol < puzzle.grid[row].length) {
         if (puzzle.grid[row][nextCol]) {
@@ -136,7 +114,6 @@ const GameScreen = () => {
         nextCol++;
       }
     } else {
-      // Mover a la siguiente celda vertical
       let nextRow = row + 1;
       while (nextRow < puzzle.grid.length) {
         if (puzzle.grid[nextRow][col]) {
@@ -151,7 +128,6 @@ const GameScreen = () => {
   const moveToPreviousCell = () => {
     const { row, col } = selectedCell;
     if (direction === 'across') {
-      // Mover a la celda anterior horizontal
       let prevCol = col - 1;
       while (prevCol >= 0) {
         if (puzzle.grid[row][prevCol]) {
@@ -161,7 +137,6 @@ const GameScreen = () => {
         prevCol--;
       }
     } else {
-      // Mover a la celda anterior vertical
       let prevRow = row - 1;
       while (prevRow >= 0) {
         if (puzzle.grid[prevRow][col]) {
@@ -187,7 +162,7 @@ const GameScreen = () => {
               }
               return { ...cell, value: '' };
             } else {
-              return { ...cell, value: key };
+              return { ...cell, value: key.toUpperCase() };
             }
           }
           return cell;
@@ -212,11 +187,7 @@ const GameScreen = () => {
     );
 
     if (isComplete) {
-      Alert.alert(
-        '¡Felicitaciones!',
-        'Has completado el crucigrama correctamente.',
-        [{ text: 'OK' }]
-      );
+      setShowCompletionModal(true);
     }
   };
 
@@ -250,6 +221,25 @@ const GameScreen = () => {
           onCellPress={handleCellPress}
         />
         <Keyboard onKeyPress={handleKeyPress} />
+
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={showCompletionModal}
+          onRequestClose={() => setShowCompletionModal(false)}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>¡Crucigrama Completado!</Text>
+              <Text style={styles.modalText}>
+                ¡Felicitaciones! Has resuelto el crucigrama correctamente.
+              </Text>
+              <TouchableOpacity style={styles.acceptButton} onPress={resetGame}>
+                <Text style={styles.acceptButtonText}>Aceptar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
       </View>
     </SafeAreaView>
   );
@@ -264,6 +254,43 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'space-between',
     padding: 20,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    elevation: 5,
+    minWidth: 300,
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    color: '#007AFF',
+  },
+  modalText: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  acceptButton: {
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 30,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginTop: 10,
+  },
+  acceptButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 

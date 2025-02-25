@@ -30,7 +30,6 @@ const Keyboard = ({ onKeyPress }) => {
 const styles = StyleSheet.create({
   keyboard: {
     padding: 5,
-    backgroundColor: '#f0f0f0',
   },
   row: {
     flexDirection: 'row',
@@ -38,7 +37,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   key: {
-    width: 30,
+    width: 26,
     height: 40,
     backgroundColor: '#fff',
     margin: 2,
@@ -49,7 +48,7 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
   },
   specialKey: {
-    width: 50,
+    width: 40,
     backgroundColor: '#e0e0e0',
   },
   keyText: {
