@@ -1,5 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import Colors from '../constants/colors';
+import Layout from '../constants/layout';
 
 const Cell = ({ value, number, isBlocked, isSelected, isActive, onPress }) => {
   return (
@@ -21,34 +23,34 @@ const Cell = ({ value, number, isBlocked, isSelected, isActive, onPress }) => {
 
 const styles = StyleSheet.create({
   cell: {
-    width: 40,
-    height: 40,
+    width: Layout.PUZZLE_DIMENSIONS.getCellSize(),
+    height: Layout.PUZZLE_DIMENSIONS.getCellSize(),
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: Colors.BOARD.cellBorder,
     justifyContent: 'center',
     alignItems: 'center',
     margin: 1,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.BOARD.cellBackground,
   },
   blocked: {
-    backgroundColor: '#333',
+    backgroundColor: Colors.BOARD.blockedCell,
   },
   selected: {
-    backgroundColor: '#e3f2fd',
+    backgroundColor: Colors.BOARD.selectedCell,
   },
   active: {
-    backgroundColor: '#bbdefb',
+    backgroundColor: Colors.BOARD.activeWord,
   },
   number: {
     position: 'absolute',
     top: 2,
     left: 2,
-    fontSize: 10,
-    color: '#666',
+    fontSize: Layout.FONT_SIZES.TINY,
+    color: Colors.BOARD.cellNumberText,
   },
   letter: {
-    fontSize: 20,
-    color: '#000',
+    fontSize: Layout.FONT_SIZES.XL,
+    color: Colors.BOARD.cellText,
   },
 });
 
