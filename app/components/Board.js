@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import Cell from './Cell';
+import Colors from '../constants/colors';
+import Layout from '../constants/layout';
 
 const Board = ({ puzzle, onCellPress }) => {
   if (!puzzle || !puzzle.grid) {
@@ -30,8 +32,8 @@ const Board = ({ puzzle, onCellPress }) => {
 
 const styles = StyleSheet.create({
   board: {
-    padding: 10,
-    backgroundColor: '#fff',
+    padding: Layout.SPACING.M,
+    backgroundColor: Colors.BOARD.cellBackground,
   },
   row: {
     flexDirection: 'row',
